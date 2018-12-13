@@ -3,8 +3,8 @@
 namespace App\User;
 
 use PageController;
-use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Exception\ClientException;
+use RuntimeException;
+use SilverStripe\Core\Convert;
 use SilverStripe\Security\Member;
 
 class UserCreatorPageController extends PageController
@@ -16,18 +16,17 @@ class UserCreatorPageController extends PageController
     public $client;
 
     /**
-     * @var string
-     */
-    public $url;
-
-    /**
      * @var Member
      */
     private $member;
 
+    /**
+     * @var string
+     */
+    private $url = 'https://randomuser.me/api/';
+
     private static $dependencies = [
         'client' => '%$UserGenClient',
-        'url' => 'https://randomuser.me/api/',
     ];
 
     public function init()
@@ -45,9 +44,7 @@ class UserCreatorPageController extends PageController
     {
         try {
             $response = $this->client->request('GET', $this->url);
-        } catch (ConnectException $e) {
-            $this->httpError(503, sprintf('Unable to connect to %s, error: %s', $this->url, $e->getMessage()));
-        } catch (ClientException $e) {
+        } catch (RuntimeException $e) {
             $this->httpError(503, sprintf('Unable to connect to %s, error: %s', $this->url, $e->getMessage()));
         }
 
@@ -80,11 +77,11 @@ class UserCreatorPageController extends PageController
 
         $member = Member::create();
 
-        $member->FirstName = $data['name']['first'];
-        $member->Surname = $data['name']['last'];
-        $member->Email = $data['email'];
-        $member->Cell = $data['cell'];
-        $member->ProfilePic = $data['picture']['large'];
+        $member->FirstName = Convert::raw2sql($data['name']['first']);
+        $member->Surname = Convert::raw2sql($data['name']['last']);
+        $member->Email = Convert::raw2sql($data['email']);
+        $member->Cell = Convert::raw2sql($data['cell']);
+        $member->ProfilePic = Convert::raw2sql($data['picture']['large']);
 
         $member->write();
 
