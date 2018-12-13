@@ -1,0 +1,13 @@
+---
+Name: myproject
+---
+SilverStripe\Core\Manifest\ModuleManifest:
+  project: app
+
+SilverStripe\Core\Injector\Injector:
+  UserGenClient:
+    factory: 'App\User\ClientFactory'
+
+SilverStripe\Security\Member:
+  extensions:
+    - 'App\User\RandomMemberExtension'
