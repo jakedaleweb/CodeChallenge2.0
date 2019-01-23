@@ -64,10 +64,10 @@ class UserCreatorPageControllerTest extends SapphireTest {
      * @param mixed $body
      * @param mixed $headers
      */
-    protected function setMockResponses($statusCode, $headers = [], $body = null)
+    protected function setMockResponses($statusCode, $headers = [], $body = null, $fn = null)
     {
         $responses[] = new Response($statusCode, $headers, $body);
-        $mock = new MockHandler($responses);
+        $mock = new MockHandler($responses, $fn);
         $handler = HandlerStack::create($mock);
         $handler->push(Middleware::history($this->history));
         $client = new Client(['handler' => $handler]);
@@ -111,11 +111,31 @@ class UserCreatorPageControllerTest extends SapphireTest {
         $this->assertEquals($result, $this->data);
     }
 
+    public function testGetUserDataEmptyResponse()
+    {
+        $this->setMockResponses('200', [], false);
+        $c = UserCreatorPageController::create();
+        $this->setExpectedException(HTTPResponse_Exception::class, 'Unable to parse response as JSON, or empty response body from https://randomuser.me/api/');
+        $c->getUserData();
+    }
+
     public function testGetUserDataError()
     {
         $this->setMockResponses('503');
         $c = UserCreatorPageController::create();
-        $this->setExpectedException(HTTPResponse_Exception::class);
+        $this->setExpectedException(HTTPResponse_Exception::class, 'Unable to connect to https://randomuser.me/api/, error: Server error: `GET https://randomuser.me/api/` resulted in a `503 Service Unavailable` response');
+        $c->getUserData();
+    }
+
+    public function testGetUserDataException()
+    {
+        $fn = function(){
+            throw new \RuntimeException('something');
+        };
+
+        $this->setMockResponses('503', [], null, $fn);
+        $c = UserCreatorPageController::create();
+        $this->setExpectedException(HTTPResponse_Exception::class, 'Unable to connect to https://randomuser.me/api/, error: something');
         $c->getUserData();
     }
 

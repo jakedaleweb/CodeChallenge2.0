@@ -1,0 +1,16 @@
+<phpunit bootstrap="vendor/silverstripe/framework/tests/bootstrap.php" colors="true" backupGlobals="false" backupStaticAttributes="false" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" processIsolation="false" stopOnError="false" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" syntaxCheck="false" verbose="true">
+
+        <php>
+                <const name="PHPUNIT_RUNNING" value="true"/>
+        </php>
+
+        <testsuite name="Default">
+                <directory>app/tests</directory>
+        </testsuite>
+
+        <filter>
+                <whitelist processUncoveredFilesFromWhitelist="true">
+                        <directory>app/src</directory>
+                </whitelist>
+        </filter>
+</phpunit>
